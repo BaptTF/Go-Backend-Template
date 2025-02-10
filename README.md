@@ -1,21 +1,40 @@
-![GitHub Release](https://img.shields.io/github/v/release/CETEN-BDE/basic-project)
-![GitHub License](https://img.shields.io/github/license/CETEN-BDE/basic-project)
+![GitHub Release](https://img.shields.io/github/v/release/CETEN-BDE/Log-backend)
+![GitHub License](https://img.shields.io/github/license/CETEN-BDE/Log-backend)
 ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/CETEN-BDE/basic-project) <!-- Remove this if you do not want the codeclimate badge-->
 
+# Go Backend Template
+
+This is a template for go backen for ceten project
+
 <!-- TEMPLATE INSTRUCTIONS -->
-# Basic project template
-
-This is a generic project template, without a specific programming language. It should follow the general workflow for the organization, and should be used when creating a new project.
-
-More specific templates will be available later for more specialized projects (backend api, web front ...), with CI/CD already setup. Fore more information, see the [organization's templates](https://github.com/orgs/CETEN-BDE/repositories?q=template%3Atrue+archived%3Afalse).
 
 ## Template content
 
 - Default MIT license
 - README.md template with badges
 - Issue labels
-- Issue templates (soon)
+- Issue templates
 - Branch protection rules
+- api
+   - example.go : an exemple of api call handler
+   - impl.go : basic file to create echo server
+- autogen
+   - project.gen.go : auto-generated file via oapi-codegen with project.openapi.yml
+- cmd
+   - project
+      - main.go : The main to start the api
+- internal
+   - db
+      - init.go : init gorm to connect to MariaDB
+   - models
+      - example.go : example of DB model
+- .env.example : example of .env file you need to change it when you change the db name
+- .gitignore
+- docker-compose.yml : it create the password and db name
+- go.mod
+- go.sum
+- project.openapi.yml : the openapi file to explain all your route
+- Taskfile.yml : the task file to simplify the code generation
 
 ## How to use this template
 
@@ -49,6 +68,42 @@ Fill the README template below these instructions. You can replace the following
 - `PROJECT_TITLE` : The project name, used in the title
 - `basic-project` : The name of the repository (the part after the organization's name in the URL)
 
+You need to change :
+
+- **PROJECT_TITLE**.openapi.yml
+
+In the taskfile ->
+- oapi-codegen -generate="types,server,strict-server,spec" -package autogen **PROJECT_TITLE**.openapi.yml > autogen/**PROJECT_TITLE**.gen.go
+- gomodifytags -all -file autogen/**PROJECT_TITLE**.gen.go -add-tags bson -w > /dev/null
+
+If you already have MariaDB
+
+- you need to create a Database **PROJECT_TITLE**
+- change .env to to match your user:password and Database Name
+
+Else
+
+- cmd/**PROJECT_TITLE**/**PROJECT_TITLE**.gen.go
+In .docker-compose.yml
+- MYSQL_DATABASE: **PROJECT_TITLE**
+
+
+In .env.example
+- **PROJECT_TITLE**_BACKEND_DSN="root:changeme@tcp(127.0.0.1:3306)/**PROJECT_TITLE**?charset=utf8mb4&parseTime=True&loc=Local"
+
+In init.go
+- dsn := os.Getenv("**PROJECT_TITLE**_BACKEND_DSN")
+
+In go.mod
+- package **basic-project**
+
+In Go file
+- "basic-project/autogen"
+- "basic-project/internal/models"
+- "basic-project/internal/db"
+- "basic-project/internal/api"
+
+
 #### Remove the template instructions
 
 When everything is setup, remove these instructions from the README. This can be done eaysily by replacing the following regexp with an empty string :
@@ -65,47 +120,53 @@ Following this line is the README.md template to fill.
 ---
 
 <!-- TEMPLATE INSTRUCTIONS -->
-# PROJECT_TITLE
 
-Quick description of the project, what's its use
-
-<!-- GETTING STARTED, INSTALLATION INSTRUCTIONS -->
 ## Getting Started
-
-Provide the steps to setup a working copy locally here. Exemple : 
 
 To get a local copy up and running follow these steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+* Install Go
+```
+  https://go.dev/doc/install
+```
+* Install Go-Task
+```
+https://taskfile.dev/installation/
+```
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/CETEN-BDE/basic-project.git
    ```
-3. Install NPM packages
+2. Setup dependencies
    ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+   task setup
    ```
    
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+To start the api
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+```sh
+go run cmd/PROJECT_TITLE/main.go
+```
+
+### OpenApi
+
+The request handler and type for the api are auto-generated with oapi-codegen
+Use:
+```sh
+task regen
+```
+To update the file project.gen.go
+
+
+_For more examples, please refer to the [Documentation](https://github.com/CETEN-BDE/Go-Backend-Template/wiki)_
 
 <!-- CONTRIBUTING -->
 ## Contributing
